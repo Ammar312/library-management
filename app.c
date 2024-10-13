@@ -1,5 +1,16 @@
 #include <stdio.h>
+#include <time.h>
 
+struct Book
+{
+    int id;
+    char title[50];
+    char author[50];
+    struct tm date;
+    int isIssued; // 0=available , 1=issued
+};
+
+int addBook();
 int main()
 {
     int choice;
@@ -22,7 +33,7 @@ int main()
             addBook();
             break;
         case 2:
-            /* viewBooks(); */
+            //  viewBooks();
             break;
         case 3:
             /* editBooks(); */
@@ -52,6 +63,26 @@ int main()
 
 int addBook()
 {
-    printf("Book Added");
+    FILE *file;
+    file = fopen("library.txt", "a");
+    struct Book book;
+    printf("Enter Book Id: ");
+    scanf("%d", &book.id);
+    // Clear the input buffer to consume the newline character
+    getchar(); // This will consume the leftover newline from the previous scanf
+
+    printf("Enter Book Title: ");
+    // scanf(" %s", &book.title);
+    fgets(book.title, sizeof(book.title), stdin); // Using fgets to handle spaces
+    printf("Enter Book Author: ");
+    fgets(book.author, sizeof(book.author), stdin); // Using fgets to handle spaces
+    // scanf(" %s", &book.author);
+    // Get the current date
+    time_t t = time(NULL);
+    book.date = *localtime(&t);
+    book.isIssued = 0;
+    fwrite(&book, sizeof(struct Book), 1, file);
+    fclose(file);
+    printf("Book Added Successfully");
     return 0;
 }
