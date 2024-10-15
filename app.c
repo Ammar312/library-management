@@ -14,6 +14,7 @@ struct Book
 
 int addBook();
 int viewAllBooks();
+int searchBook();
 int main()
 {
     int choice;
@@ -51,7 +52,7 @@ int main()
             /* viewIssueBooks(); */
             break;
         case 7:
-            /* searchBook(); */
+            searchBook();
             break;
         case 0:
             printf("Exiting....");
@@ -127,6 +128,49 @@ int viewAllBooks()
     while (fread(&book, sizeof(struct Book), 1, file))
     {
         printf("\n%-10d %-30s %-30s %s", book.id, book.title, book.author, book.isIssued ? "Issued" : "Available");
+    }
+    fclose(file);
+    return 0;
+}
+
+int searchBook()
+{
+    FILE *file = fopen("library.txt", "rb");
+    struct Book book;
+    char bookTitle[50];
+
+    if (file == NULL)
+    {
+        printf("No Books Found \n");
+        return -1;
+    }
+    getchar();
+    printf("\nEnter the title of the book to search: ");
+    fgets(bookTitle, sizeof(bookTitle), stdin);
+
+    // Remove newline character from author
+    size_t len = strlen(bookTitle);
+    if (len > 0 && bookTitle[len - 1] == '\n')
+    {
+        bookTitle[len - 1] = '\0';
+    }
+
+    while (fread(&book, sizeof(struct Book), 1, file))
+    {
+        if (strcmp(book.title, bookTitle) == 0)
+        {
+            printf("\nBook Found:\n");
+            printf("ID: %d\n", book.id);
+            printf("Title: %s\n", book.title);
+            printf("Author: %s\n", book.author);
+            printf("Status: %s\n", book.isIssued ? "Issued" : "Available");
+            break;
+        }
+        else
+        {
+            printf("\nBook with title %s not found", bookTitle);
+            break;
+        }
     }
     fclose(file);
     return 0;
