@@ -1,6 +1,8 @@
 #include <stdio.h>
+#include <conio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <time.h>
-
 struct Book
 {
     int id;
@@ -11,6 +13,7 @@ struct Book
 };
 
 int addBook();
+int viewAllBooks();
 int main()
 {
     int choice;
@@ -33,7 +36,7 @@ int main()
             addBook();
             break;
         case 2:
-            //  viewBooks();
+            viewAllBooks();
             break;
         case 3:
             /* editBooks(); */
@@ -52,10 +55,13 @@ int main()
             break;
         case 0:
             printf("Exiting....");
+            exit(0);
             break;
         default:
             printf("Invalid Choice \n");
         }
+        printf("\nPress Any Key To Continue...\n");
+        getch();
     } while (choice != 0);
 
     return 0;
@@ -64,19 +70,38 @@ int main()
 int addBook()
 {
     FILE *file;
-    file = fopen("library.txt", "a");
+    file = fopen("library.txt", "ab");
     struct Book book;
-    printf("Enter Book Id: ");
-    scanf("%d", &book.id);
+    srand(time(0)); // Seed the random number generator with the current time
+    srand(time(0));
+
+    // Generate a random ID number between a range, for example, 1000 to 9999
+    int random_id = rand() % 9000 + 1000; // % 9000 ensures it's in the range 0-8999, then +1000 makes it 1000-9999
+    book.id = random_id;
     // Clear the input buffer to consume the newline character
-    getchar(); // This will consume the leftover newline from the previous scanf
+    getchar(); // This will consume the leftover newline
 
     printf("Enter Book Title: ");
     // scanf(" %s", &book.title);
     fgets(book.title, sizeof(book.title), stdin); // Using fgets to handle spaces
+
+    // Remove newline character from title
+    size_t len = strlen(book.title);
+    if (len > 0 && book.title[len - 1] == '\n')
+    {
+        book.title[len - 1] = '\0';
+    }
+
     printf("Enter Book Author: ");
     fgets(book.author, sizeof(book.author), stdin); // Using fgets to handle spaces
-    // scanf(" %s", &book.author);
+
+    // Remove newline character from author
+    len = strlen(book.author);
+    if (len > 0 && book.author[len - 1] == '\n')
+    {
+        book.author[len - 1] = '\0';
+    }
+
     // Get the current date
     time_t t = time(NULL);
     book.date = *localtime(&t);
@@ -84,5 +109,25 @@ int addBook()
     fwrite(&book, sizeof(struct Book), 1, file);
     fclose(file);
     printf("Book Added Successfully");
+    return 0;
+}
+
+int viewAllBooks()
+{
+    FILE *file = fopen("library.txt", "rb");
+    struct Book book;
+
+    if (file == NULL)
+    {
+        printf("No Book found\n");
+        return 0;
+    }
+
+    printf("\n%-10s %-30s %-30s %s \n", "ID", "Title", "Author", "Status");
+    while (fread(&book, sizeof(struct Book), 1, file))
+    {
+        printf("\n%-10d %-30s %-30s %s", book.id, book.title, book.author, book.isIssued ? "Issued" : "Available");
+    }
+    fclose(file);
     return 0;
 }
